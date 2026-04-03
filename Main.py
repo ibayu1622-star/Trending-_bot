@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+from groq import Groq
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -10,14 +10,13 @@ from telegram.ext import (
 )
 
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-2.0-flash-lite")
+client = Groq(api_key=GROQ_API_KEY)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Halo! Saya AI Assistant powered by Gemini.\n"
+        "Halo! Saya AI Assistant powered by Groq.\n"
         "Silakan tanya apa saja!"
     )
 
@@ -25,8 +24,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
     await update.message.reply_text("⏳ Sedang memproses...")
     try:
-        response = model.generate_content(user_message)
-        reply = response.text
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": user_message}]
+        )
+        reply = response.choices[0].message.content
         await update.message.reply_text(reply)
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {str(e)}")
@@ -34,8 +36,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     if not TELEGRAM_TOKEN:
         raise ValueError("TELEGRAM_TOKEN tidak ditemukan!")
-    if not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY tidak ditemukan!")
+    if not GROQ_API_KEY:
+        raise ValueError("GROQ_API_KEY tidak ditemukan!")
 
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
