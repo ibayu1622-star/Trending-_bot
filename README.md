@@ -1,2 +1,0 @@
-# Trending-_bot
-Public
