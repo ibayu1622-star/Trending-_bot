@@ -2,5 +2,4 @@ anthropic
 ccxt
 requests
 pandas
-anthropic
 python-telegram-bot
