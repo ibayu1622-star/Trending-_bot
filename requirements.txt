@@ -1,5 +1,2 @@
 anthropic
-ccxt
-requests
-pandas
 python-telegram-bot
